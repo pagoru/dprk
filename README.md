@@ -1,4 +1,4 @@
-# Deno Template
+# Deno's Protocol for Remote Knowledge - DPRK
 
 ---------
 ### Usage

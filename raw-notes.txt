@@ -1,0 +1,30 @@
+Deno's Protocol for Remote Knowledge
+DPRK
+
+0: [0, 1]
+
+class Entity {
+	readonly id: string
+	name: string
+}
+
+const requestEntity = new RequestEntity() //0
+requestEntity.setId(id); //0 =>
+requestEntity.update();
+
+return response = await client.request(requestEntity);
+
+-----
+
+const requestUpdateEntity = new RequestUpdateEntity();
+requestUpdateEntity.setId(id);
+requestUpdateEntity.setName('updatedName');
+
+return response = await client.request(requestEntity);
+
+------
+
+POST <<<
+- graphQL => POST / => "getEntity($id){ id, name }" => { id: "sadkas", name: "laksjdkasd" }
+
+- GRPC => POST /0 => ['sadkas'] => ['sadkas', 'laksjdkasd']

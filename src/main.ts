@@ -1,4 +1,4 @@
-
+import { ObjectModel } from './types.ts'
 
 // type EntityQueries = {
 //     getEntity: (name: string) => Entity | undefined;
@@ -9,17 +9,7 @@
 //     description: string;
 // }
 
-type ObjectModel = {
-    name: string;
-    properties: Record<string, {
-        type?: 'string' | 'number',
-        writable?: boolean,
-        visibility?: 'private' | 'public'
-    }>;
-//     queries: Record<string, {}>
-}
-
-const Entity: ObjectModel = {
+const EntityObjectModel: ObjectModel = {
     name: 'Entity',
     properties: {
         id: {
@@ -47,26 +37,37 @@ const Entity: ObjectModel = {
 
 const getCapitalizedString = (text: string): string => text[0].toUpperCase() + text.slice(1)
 
-const generateObjectModelTypeText = ({
+const generateObjectModelFileDeclarations = ({
     name,
     properties
 }: ObjectModel) => {
     const publicPropertyKeyList = Object.keys(properties)
-        .filter((property) => properties[property].visibility === 'public');
+        .filter((propertyKey) => properties[propertyKey].visibility === 'public');
+
+    const functionList = publicPropertyKeyList
+        .map((property) => {
+            const { type, writable } = properties[property];
+            return [
+                writable ? `set${getCapitalizedString(property)}(${property}: ${type})` : undefined,
+                `get${getCapitalizedString(property)}():`
+            ].filter(row => Boolean(row))
+        }).flat()
 
     const objectModel = [
-        ['type', name, '= {'],
+        ['export type', name, '= {'],
         ...publicPropertyKeyList
-            .map((property) => {
-                const { type, writable } = properties[property];
+            .map((propertyKey) => {
+                const { type, writable } = properties[propertyKey];
+                const capitalizedKey = getCapitalizedString(propertyKey);
                 return [
-                    writable ? ['', `set${getCapitalizedString(property)}(${property}: ${type}):`, `Promise<${type}>;`] : undefined,
-                    ['', `get${getCapitalizedString(property)}():`, `${type};`]
+                    writable ? ['', `set${capitalizedKey}(${propertyKey}: ${type}):`, `Promise<${type}>;`] : undefined,
+                    ['', `get${capitalizedKey}():`, `Promise<${type}>;`]
                 ].filter(row => Boolean(row))
             }).flat(),
         ['}']
     ] as string[][];
-    return generateFunctionText(objectModel);
+
+    Deno.writeTextFile(`./__gen__/${name}.ts`, generateFunctionText(objectModel));
 }
 
 const generateFunctionText = (list: string[][]) => {
@@ -78,7 +79,52 @@ const generateFunctionText = (list: string[][]) => {
     }, '')
 }
 
-Deno.writeTextFile('./__gen__/entity.ts', generateObjectModelTypeText(Entity))
+const Server = (() => {
+    const objectModelFunctionsMap: any[] = [];
+
+    const addObjetModel = (objectModel: ObjectModel) => {
+        const { properties } = objectModel;
+
+        const publicPropertyKeyList = Object.keys(properties)
+            .filter((propertyKey) => properties[propertyKey].visibility === 'public');
+
+        const objectModelFunctions = publicPropertyKeyList
+            .reduce((obj, propertyKey) => {
+                const { writable } = properties[propertyKey];
+                const capitalizedKey = getCapitalizedString(propertyKey);
+
+                return ({
+                    ...obj,
+                    [`get${capitalizedKey}`]: () => {
+                        //TODO
+                        console.log('get', propertyKey)
+                    },
+                    ...writable ? {
+                        [`set${capitalizedKey}`]: (...args: any[]) => {
+                            //TODO
+                            console.log('set', propertyKey, args)
+                        }
+                    } : {}
+                })
+            }, {})
+        generateObjectModelFileDeclarations(objectModel);
+        return objectModelFunctionsMap.push(objectModelFunctions) - 1;
+    }
+
+    const getObjectModel = (objectModelId: number) => {
+        const objectModelFunctions = objectModelFunctionsMap[objectModelId];
+
+        console.log(objectModelFunctions)
+    }
+
+    return {
+        addObjetModel,
+        getObjectModel
+    }
+})();
+
+const objectModelId = Server.addObjetModel(EntityObjectModel);
+Server.getObjectModel(objectModelId)
 /**
 ** -----------------------------------------------------------------------------------------------------------
 **/
@@ -94,12 +140,3 @@ Deno.writeTextFile('./__gen__/entity.ts', generateObjectModelTypeText(Entity))
 ** -----------------------------------------------------------------------------------------------------------
 ** -----------------------------------------------------------------------------------------------------------
 **/
-
-type ExposedEntity = {
-    getName(): string;
-
-    getDescription(): string;
-    setDescription(description: string): Promise<string>;
-}
-
-const exposedEntity: ExposedEntity = {} as any

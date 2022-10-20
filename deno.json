@@ -1,7 +1,10 @@
 {
   "tasks": {
     "start": "deno run -A --watch=src/ dev.ts",
-    "test": "deno test --watch"
+    "test": "deno test --watch",
+
+    "client": "deno run -A --watch=src/ src/websocket/client.ts",
+    "server": "deno run -A --watch=src/ src/websocket/server.ts"
   },
   "importMap": "./import_map.json"
 }

@@ -7,6 +7,7 @@
         "importmap": "import_map.json"
       }
     ],
+    "lib": ["ES2020"],
     "jsx": "react"
   }
 }

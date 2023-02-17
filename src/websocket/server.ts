@@ -1,73 +1,46 @@
-import {serve} from "$deno/http/mod.ts";
-import {Utils} from "../utils/utils.ts";
-import {BlobMessage, BodyType} from "./server/message.ts";
+import {serve} from "$deno/http/server.ts";
+import {deflateRaw} from "https://deno.land/x/compress@v0.4.4/mod.ts";
+import {encodeDPRK, userDeclaration, ValueType} from "./lib.ts";
 
-type ClientType = {
-    id: number;
-    socket: WebSocket;
+const route = new URLPattern({pathname: "/getUser"});
+
+const user = {
+	id: 123234,
+	name: 'name | with special | chars@',
+	email: 'pablo@test.test',
+	isAdmin: true,
+	object: {
+		foo: 'faa',
+		faa: 1904
+	}
 }
 
-const Server = () => {
-    
-    const clientRecord: Record<number, ClientType> = {};
-    
-    const requestHandler = (request: Request) => {
-        if (request.headers.get("upgrade") !== "websocket") {
-            return new Response(null, { status: 501 });
-        }
-        const { socket, response } = Deno.upgradeWebSocket(request);
-        const id = Utils.uid.getUID();
-        
-        const onOpen = async (event: Event) => {
-            console.log("Connected to client ...");
-            clientRecord[id] = {
-                id,
-                socket
-            }
-            // socket.send(new Blob([new Uint8Array([0, 1, 22])]))
-            // socket.send(new Blob([new Uint8Array([0, 324332423, 22])]))
-            // socket.send(new Blob([new Uint8Array([0, 1, 22])]))
-    
-            
-            
-            socket.send(
-                BlobMessage(
-                    [BodyType.STRING, 34, 2],
-                    'testing'
-                )
-            )
-            // socket.send(new Blob( [JSON.stringify({ a: 'hola' })] ));
-        }
-        
-        const onMessage = (message: MessageEvent) => {
-            console.log(message.data);
-        }
-    
-        const onError = (e: Event | ErrorEvent) => {
-            console.log(e instanceof ErrorEvent ? e.message : e.type);
-        }
-    
-        const onClose = () => {
-            console.log('disconnected');
-            delete clientRecord[id];
-        }
-        
-        socket.onopen = onOpen;
-        socket.onmessage = onMessage;
-        socket.onclose = onClose;
-        socket.onerror = onError;
-        
-        return response;
-    }
-    
-    console.log("Waiting for client ...");
-    
-    
-    const listen = (port: number) => serve(requestHandler, { port });
-    
-    return {
-        listen
-    }
+function handler(req: Request): Response {
+	
+	const match = route.exec(req.url);
+	
+	if (match) {
+		
+		const test = encodeDPRK(userDeclaration, user);
+		
+		const bytes = new TextEncoder().encode(test);
+		
+		const deflated = deflateRaw(bytes, {
+			level: 9,
+			to: 'string',
+			gzip: true,
+		});
+		return new Response(deflated, {
+			headers: new Headers({
+				// 'Content-Encoding': 'gzip'
+			})
+		});
+	}
+	
+	return new Response("Not found (try /books/1)", {
+		status: 404,
+	});
 }
 
-Server().listen(8000)
+console.log("Listening on http://localhost:8000");
+serve(handler);

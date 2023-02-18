@@ -1,6 +1,6 @@
 import {serve} from "$deno/http/server.ts";
 import {deflateRaw} from "https://deno.land/x/compress@v0.4.4/mod.ts";
-import {encodeDPRK, userDeclaration, ValueType} from "./lib.ts";
+import {encodeDPRK, userDeclaration} from "./lib.ts";
 
 const route = new URLPattern({pathname: "/getUser"});
 
@@ -10,9 +10,11 @@ const user = {
 	email: 'pablo@test.test',
 	isAdmin: true,
 	object: {
-		foo: 'faa',
-		faa: 1904
-	}
+		foo: {
+			faa: 3
+		}
+	},
+	array: [2, 5, 2]
 }
 
 function handler(req: Request): Response {
@@ -22,7 +24,6 @@ function handler(req: Request): Response {
 	if (match) {
 		
 		const test = encodeDPRK(userDeclaration, user);
-		
 		const bytes = new TextEncoder().encode(test);
 		
 		const deflated = deflateRaw(bytes, {
@@ -42,5 +43,4 @@ function handler(req: Request): Response {
 	});
 }
 
-console.log("Listening on http://localhost:8000");
 serve(handler);

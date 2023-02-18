@@ -15,7 +15,8 @@ const user = {
 	},
 	array: [2, 5, 2, 98765435678],
 	someAnidationHereMaybe: {
-		maybeYouAreRight: 'THIS IS A TEST'
+		maybeYouAreRight: 'THIS IS A TEST',
+		youAreAbsolutlyRight: false
 	}
 }
 
@@ -25,10 +26,13 @@ function handler(req: Request): Response {
 	
 	if (match) {
 		
-		const test = encodeDPRK(userDeclaration, user);
+		const encoded = encodeDPRK(userDeclaration, user);
 		
-		console.log(test.length)
-		return new Response(test, {
+		const dprkLength = encoded.length;
+		const jsonLength = new TextEncoder().encode(JSON.stringify(user)).length;
+		const percent = Math.trunc((1 - (dprkLength / jsonLength)) * 100_00) / 100;
+		console.log(`-${percent}%`)
+		return new Response(encoded, {
 			headers: new Headers({
 				// 'Content-Encoding': 'gzip'
 			})

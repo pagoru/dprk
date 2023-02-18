@@ -13,30 +13,32 @@ export type ValueTypes = Record<string, ValueType | ValueTypes> | ValueType[];
 
 
 export const encodeDPRK = (declaration: ValueTypes, object: any): string => {
-	
-	const encode = (value, valueType) => {
-		if (valueType === ValueType.BOOLEAN)
-			return value ? 1 : 0
+	const encodeRAW = (declaration: ValueTypes, object: any) => {
 		
-		if(Array.isArray(valueType))
-			return `${value.length}⃌${value.map((childValue) => encode(childValue, valueType[0])).join('⃌')}`
-		
-		if(typeof valueType === 'object')
-			return encodeDPRK(valueType, value)
-		
-		return value;
-	}
-	
-	const data = Object.keys(declaration)
-		.map((key) => {
-			const value = object[key];
-			const valueType = declaration[key]
+		const encode = (value, valueType) => {
+			if (valueType === ValueType.BOOLEAN)
+				return value ? 1 : 0
 			
-			return encode(value, valueType);
-		})
-		.join('⃌')
-	
-	const bytes = new TextEncoder().encode(data);
+			if(Array.isArray(valueType))
+				return `${value.length}⃌${value.map((childValue) => encode(childValue, valueType[0])).join('⃌')}`
+			
+			if(typeof valueType === 'object')
+				return encodeRAW(valueType, value)
+			
+			return value;
+		}
+		
+		return Object.keys(declaration)
+			.map((key) => {
+				const value = object[key];
+				const valueType = declaration[key]
+				
+				return encode(value, valueType);
+			})
+			.join('⃌')
+	}
+	const rawData = encodeRAW(declaration, object);
+	const bytes = new TextEncoder().encode(rawData);
 	
 	return deflateRaw(bytes, {
 		level: 9,
@@ -54,7 +56,9 @@ export const decodeDPRK = (declaration: ValueTypes, arrayBuffer: ArrayBuffer): s
 	const decode = (valueType: ValueType) => {
 		let value;
 		
-		if (valueType === ValueType.BOOLEAN)
+		if (valueType === ValueType.STRING)
+			value = data.shift();
+		else if (valueType === ValueType.BOOLEAN)
 			value = data.shift() === '1';
 
 		else if (valueType === ValueType.NUMBER)
@@ -67,8 +71,6 @@ export const decodeDPRK = (declaration: ValueTypes, arrayBuffer: ArrayBuffer): s
 		} else if(typeof valueType === 'object') {
 			value = decodeDeclaration(valueType)
 			
-		} else {
-			value = data.shift()
 		}
 		
 		return value;
@@ -92,6 +94,7 @@ export const userDeclaration: ValueTypes = {
 	},
 	array: [ValueType.NUMBER],
 	someAnidationHereMaybe: {
-		maybeYouAreRight: ValueType.STRING
+		maybeYouAreRight: ValueType.STRING,
+		youAreAbsolutlyRight: ValueType.BOOLEAN
 	}
 }

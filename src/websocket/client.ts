@@ -22,4 +22,3 @@ const { getUser } = client();
 const user = await getUser('test');
 
 console.log(user);
-console.log(new TextEncoder().encode(JSON.stringify(user)).length)

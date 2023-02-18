@@ -19,4 +19,7 @@ const client = () => {
 
 const { getUser } = client();
 
-getUser('test').then(console.log)
+const user = await getUser('test');
+
+console.log(user);
+console.log(new TextEncoder().encode(JSON.stringify(user)).length)

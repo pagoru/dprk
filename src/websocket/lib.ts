@@ -1,6 +1,7 @@
 
 //Generic
 import {inflateRaw} from "https://deno.land/x/compress@v0.4.4/zlib/inflate.ts";
+import {deflateRaw} from "https://deno.land/x/compress@v0.4.4/zlib/deflate.ts";
 
 export enum ValueType {
 	NUMBER,
@@ -26,7 +27,7 @@ export const encodeDPRK = (declaration: ValueTypes, object: any): string => {
 		return value;
 	}
 	
-	return Object.keys(declaration)
+	const data = Object.keys(declaration)
 		.map((key) => {
 			const value = object[key];
 			const valueType = declaration[key]
@@ -34,6 +35,14 @@ export const encodeDPRK = (declaration: ValueTypes, object: any): string => {
 			return encode(value, valueType);
 		})
 		.join('⃌')
+	
+	const bytes = new TextEncoder().encode(data);
+	
+	return deflateRaw(bytes, {
+		level: 9,
+		to: 'string',
+		gzip: true,
+	});
 }
 export const decodeDPRK = (declaration: ValueTypes, arrayBuffer: ArrayBuffer): string => {
 	const inflatedData = inflateRaw(new Uint8Array(arrayBuffer))
@@ -82,4 +91,7 @@ export const userDeclaration: ValueTypes = {
 		}
 	},
 	array: [ValueType.NUMBER],
+	someAnidationHereMaybe: {
+		maybeYouAreRight: ValueType.STRING
+	}
 }

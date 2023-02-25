@@ -1,7 +1,8 @@
+
 import {decodeDPRK, userDeclaration} from "./lib.ts";
 
 
-await new Promise(r => setTimeout(() => r(), 300))
+await new Promise(r => setTimeout(() => r(''), 300))
 
 const client = () => {
 	

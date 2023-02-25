@@ -1,7 +1,7 @@
 
 //Generic
-import {inflateRaw} from "https://deno.land/x/compress@v0.4.4/zlib/inflate.ts";
-import {deflateRaw} from "https://deno.land/x/compress@v0.4.4/zlib/deflate.ts";
+import {inflateRaw} from "$compress/zlib/inflate.ts";
+import {deflateRaw} from "$compress/zlib/deflate.ts";
 
 export enum ValueType {
 	NUMBER,
@@ -9,18 +9,19 @@ export enum ValueType {
 	BOOLEAN
 }
 
+//@ts-ignore
 export type ValueTypes = Record<string, ValueType | ValueTypes> | ValueType[];
 
 
-export const encodeDPRK = (declaration: ValueTypes, object: any): string => {
-	const encodeRAW = (declaration: ValueTypes, object: any) => {
+export const encodeDPRK = (declaration: ValueTypes, object: any): Uint8Array => {
+	const encodeRAW = (declaration: ValueTypes, object: any): string => {
 		
-		const encode = (value, valueType) => {
+		const encode = (value: any, valueType: any): any => {
 			if (valueType === ValueType.BOOLEAN)
 				return value ? 1 : 0
 			
 			if(Array.isArray(valueType))
-				return `${value.length}⃌${value.map((childValue) => encode(childValue, valueType[0])).join('⃌')}`
+				return `${value.length}⃌${value.map((childValue: any) => encode(childValue, valueType[0])).join('⃌')}`
 			
 			if(typeof valueType === 'object')
 				return encodeRAW(valueType, value)
@@ -51,9 +52,9 @@ export const decodeDPRK = (declaration: ValueTypes, arrayBuffer: ArrayBuffer): s
 	const data = new TextDecoder().decode(inflatedData)
 		.split(/⃌/gm)
 	
-	const decodeDeclaration = (declaration) => Object.keys(declaration).reduce((obj, key) => ({...obj, [key]: decode(declaration[key]) }), {})
+	const decodeDeclaration = (declaration: any): any => Object.keys(declaration).reduce((obj, key) => ({...obj, [key]: decode(declaration[key]) }), {})
 	
-	const decode = (valueType: ValueType) => {
+	const decode = (valueType: ValueType): any => {
 		let value;
 		
 		if (valueType === ValueType.STRING)

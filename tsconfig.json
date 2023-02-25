@@ -1,13 +1,47 @@
 {
-  "compilerOptions": {
-    "plugins": [
-      {
-        "name": "typescript-deno-plugin",
-        "enable": true,
-        "importmap": "import_map.json"
-      }
-    ],
-    "lib": ["ES2020"],
-    "jsx": "react"
-  }
+    "compilerOptions": {
+        "allowJs": false,
+        "allowUmdGlobalAccess": false,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "alwaysStrict": true,
+        "assumeChangesOnlyAffectDirectDependencies": false,
+        "checkJs": false,
+        "disableSizeLimit": false,
+        "generateCpuProfile": "profile.cpuprofile",
+        "jsxFactory": "React.createElement",
+        "jsxFragmentFactory": "React.Fragment",
+        "noFallthroughCasesInSwitch": false,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noImplicitUseStrict": false,
+        "noStrictGenericChecks": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "preserveConstEnums": false,
+        "removeComments": false,
+        "resolveJsonModule": true,
+        "strict": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+        "suppressExcessPropertyErrors": false,
+        "suppressImplicitAnyIndexErrors": false,
+        "useDefineForClassFields": false,
+        "plugins": [
+          {
+            "name": "typescript-deno-plugin",
+            "enable": true,
+            "importmap": "import_map.json"
+          }
+        ],
+        "lib": ["deno.ns", "deno.window"],
+        "jsx": "react",
+        "types": [
+            "./deno.d.ts",
+            "https://deno.land/std@0.177.0/http/server.ts"
+        ]
+    }
 }

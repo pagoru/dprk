@@ -10,13 +10,13 @@ export enum Value {
 //@ts-ignore
 export type EntityValueDeclaration = Record<string, Value | EntityValueDeclaration> | Value[];
 
-export type ObjectValue = Record<string, string> | string | number | boolean | Object;
+export type ObjectValue = Record<string, string> | string | number | boolean;
 
 export const DPRK = () => {
 	const encode = (declaration: EntityValueDeclaration, object: ObjectValue | ObjectValue[]): Uint8Array => {
 		const encodeRAW = (declaration: EntityValueDeclaration, object: ObjectValue | ObjectValue[]): string => {
 			
-			const encodeValue = (value: ObjectValue | ObjectValue[], valueType: Value | Value[]): any => {
+			const encodeValue = (value: ObjectValue | ObjectValue[], valueType: Value | Value[]): string | number => {
 				if (valueType === Value.BOOLEAN)
 					return value ? 1 : 0
 				
@@ -28,7 +28,7 @@ export const DPRK = () => {
 				if(typeof valueType === 'object')
 					return encodeRAW(valueType, value)
 				
-				return value;
+				return value as string;
 			}
 			
 			return Object.keys(declaration)
@@ -50,14 +50,15 @@ export const DPRK = () => {
 		});
 	}
 	
-	const decode = (declaration: EntityValueDeclaration, arrayBuffer: ArrayBuffer): string => {
+	const decode = (declaration: EntityValueDeclaration, arrayBuffer: ArrayBuffer): any => {
 		const inflatedData = inflateRaw(new Uint8Array(arrayBuffer))
 		const data = new TextDecoder().decode(inflatedData)
 			.split(/⃌/gm)
 		
-		const decodeDeclaration = (declaration: any): any => Object.keys(declaration).reduce((obj, key) => ({...obj, [key]: decode(declaration[key]) }), {})
+		const decodeDeclaration = (declaration: EntityValueDeclaration): ObjectValue =>
+			Object.keys(declaration).reduce((obj, key) => ({...obj, [key]: decode(declaration[key]) }), {})
 		
-		const decode = (valueType: Value): any => {
+		const decode = (valueType: Value): ObjectValue => {
 			let value;
 			
 			if (valueType === Value.STRING)
@@ -72,12 +73,10 @@ export const DPRK = () => {
 				const length = parseInt(data.shift()!)
 				value = Array.from({length}).map(() => decode(valueType[0]))
 				
-			} else if(typeof valueType === 'object') {
+			} else if(typeof valueType === 'object')
 				value = decodeDeclaration(valueType)
-				
-			}
 			
-			return value;
+			return value as ObjectValue;
 		}
 		
 		return decodeDeclaration(declaration);

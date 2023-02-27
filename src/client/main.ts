@@ -1,5 +1,7 @@
-import {Client} from "../__gen__/lib.d";
+import { ServiceClient } from "../__gen__/client.ts";
 
-const client = Client();
+const client = ServiceClient('http://localhost:8000');
 
-client.a
+const user = await client.getUser(123)
+
+console.log(user)

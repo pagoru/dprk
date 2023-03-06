@@ -1,4 +1,4 @@
-# Deno's Protocol for Remote Knowledge - DPRK
+# Deno's Protocol for Remote Knowledge - DPRK 🇰🇵
 
 ---------
 ### Usage

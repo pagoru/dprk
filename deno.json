@@ -3,8 +3,8 @@
     "start": "deno run -A --watch=src/ dev.ts",
     "test": "deno test --watch",
 
-    "client": "deno run -A --watch=src/ src/websocket/client.ts",
-    "server": "deno run -A --watch=src/ src/websocket/server.ts"
+    "client": "deno run -A --watch=src/ src/client/main.ts",
+    "server": "deno run -A --watch=src/ src/server/main.ts"
   },
   "importMap": "./import_map.json"
 }
